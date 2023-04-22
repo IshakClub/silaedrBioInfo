@@ -1,63 +1,44 @@
-from pprint import pprint
+class Tree:
+    def __init__(self, is_word):
+        self.is_word = is_word
+        self.tree = {}
 
-first_code = input()
-second_code = input()
-row = [-1].copy() * (len(first_code) + 1)
-matrix = []
-for i in range(len(second_code) + 1):
-    matrix.append(row.copy())
-
-for y in range(len(second_code) + 1):
-    for x in range(len(first_code) + 1):
-        if y == 0:
-            if x == 0:
-                h = 0
-            else:
-                h = x
-            v = 1000000
-            d = 1000000
-        elif x == 0:
-            h = 1000000
-            v = y
-            d = 1000000
+    def make_node(self, word):
+        if len(word) == 0:
+            self.is_word = True
+            return
+        node = Tree(False)
+        if word[0] not in self.tree:
+            self.tree[word[0]] = node
+            node.make_node(word[1:])
         else:
-            h = matrix[y][x - 1] + 1
-            v = matrix[y - 1][x] + 1
-            d = matrix[y - 1][x - 1]
-            if second_code[y - 1] != first_code[x - 1]:
-                d += 1
-        mins = min(h, v, d)
-        matrix[y][x] = mins
+            self.tree[word[0]].make_node(word[1:])
 
-x, y = len(first_code), len(second_code)
-code1 = ''
-code2 = ''
-while x != 0 and y != 0:
-    h = matrix[y][x - 1] + 1
-    v = matrix[y - 1][x] + 1
-    d = matrix[y - 1][x - 1]
-    mins = min(h, v, d)
-    if h == mins:
-        code2 += '_'
-        code1 += first_code[x - 1]
-        x -= 1
-    elif v == mins:
-        code1 += '_'
-        code2 += second_code[y - 1]
-        y -= 1
-    else:
-        if mins != matrix[y][x]:
-            code2 += second_code[y - 1].lower()
-            code1 += first_code[x - 1].lower()
+    def find_node(self, prefix):
+        if len(prefix) == 0:
+            return self.tree
+        first_let = prefix[0]
+        if first_let not in self.tree:
+            return
+        n_node = self.tree[first_let].find_node(prefix[1:])
+        if n_node:
+            return n_node
+
+    def all_words(self, prefix):
+        if self.is_word:
+            result = [prefix]
         else:
-            code2 += second_code[y - 1]
-            code1 += first_code[x - 1]
-        x -= 1
-        y -= 1
-code1 = code1[::-1]
-code2 = code2[::-1]
+            result = []
+            for let in self.tree:
+                child = self.tree[let]
+                result += child.all_words(prefix + let)
+        return result
 
-pprint(matrix)
-print(matrix[len(second_code) - 1][len(first_code) - 1])
-print(code1)
-print(code2)
+
+tree = Tree(False)
+
+LIST_Of_TEMPLS = ['CATT', 'CAGT', 'ATTG']
+for templ in LIST_Of_TEMPLS:
+    tree.make_node(templ)
+
+
